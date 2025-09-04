@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Secure Checkout - ShopEverything</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary: #64748b;
+    --success: #059669;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --background: #ffffff;
+    --surface: #f8fafc;
+    --border: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--surface);
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Header */
+  header {
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .security-badges {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .security-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .security-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--success);
+  }
+
+  /* Main Layout */
+  .checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    padding: 40px 0;
+  }
+
+  .checkout-form {
+    background: var(--background);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 32px;
+  }
+
+  .order-summary {
+    background: var(--background);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 32px;
+    height: fit-content;
+    position: sticky;
+    top: 120px;
+  }
+
+  /* Progress Indicator */
+  .progress-steps {
+    display: flex;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .progress-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+
+  .progress-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+  }
+
+  .progress-step.active::after {
+    background: var(--primary);
+  }
+
+  .step-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .progress-step.active .step-circle {
+    background: var(--primary);
+    color: white;
+  }
+
+  .step-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .progress-step.active .step-label {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* Form Sections */
+  .form-section {
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+  }
+
+  .form-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .form-grid.two-column {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+  }
+
+  .form-input, .form-select {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .form-help {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Buttons */
+  .button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface);
+  }
+
+  /* Order Summary */
+  .summary-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .item-details {
+    flex: 1;
+  }
+
+  .item-name {
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .item-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .item-price {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .price-breakdown {
+    margin-top: 20px;
+  }
+
+  .price-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .price-line.total {
+    font-size: 16px;
+    font-weight: 600;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+  }
+
+  /* Support Section */
+  .support-section {
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 16px;
+    margin-top: 24px;
+  }
+
+  .support-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .support-contact {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .checkout-layout {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .form-grid.two-column {
+      grid-template-columns: 1fr;
+    }
+
+    .checkout-form, .order-summary {
+      padding: 20px;
+    }
+
+    .progress-steps {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .progress-step::after {
+      display: none;
+    }
+  }
+
+  /* Payment Method Styles */
+  .payment-methods {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .payment-method {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .payment-method:hover {
+    border-color: var(--primary);
+  }
+
+  .payment-method input[type="radio"] {
+    margin-right: 12px;
+  }
+
+  .accepted-cards {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .card-logo {
+    padding: 4px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">ShopEverything</div>
+        <div class="security-badges">
+          <div class="security-badge">
+            <svg class="security-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 1L5 4v6c0 5.55 3.84 9.74 5 10 1.16-.26 5-4.45 5-10V4l-5-3z" clip-rule="evenodd"/>
+            </svg>
+            SSL Secured
+          </div>
+          <div class="security-badge">
+            <svg class="security-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            Verified Store
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="checkout-layout">
+      <!-- Main Checkout Form -->
+      <div class="checkout-form">
+        <!-- Progress Indicator -->
+        <div class="progress-steps">
+          <div class="progress-step active">
+            <div class="step-circle">1</div>
+            <div class="step-label">Information</div>
+          </div>
+          <div class="progress-step">
+            <div class="step-circle">2</div>
+            <div class="step-label">Shipping</div>
+          </div>
+          <div class="progress-step">
+            <div class="step-circle">3</div>
+            <div class="step-label">Payment</div>
+          </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="form-section">
+          <h2 class="section-title">Contact Information</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address</label>
+              <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="form-section">
+          <h2 class="section-title">Shipping Address</h2>
+          <div class="form-grid">
+            <div class="form-grid two-column">
+              <div class="form-group">
+                <label class="form-label" for="firstName">First Name</label>
+                <input type="text" id="firstName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lastName">Last Name</label>
+                <input type="text" id="lastName" class="form-input" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="address">Address</label>
+              <input type="text" id="address" class="form-input" placeholder="Street address" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="apartment">Apartment, suite, etc. (optional)</label>
+              <input type="text" id="apartment" class="form-input">
+            </div>
+            
+            <div class="form-grid two-column">
+              <div class="form-group">
+                <label class="form-label" for="city">City</label>
+                <input type="text" id="city" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="state">State/Province</label>
+                <select id="state" class="form-select" required>
+                  <option value="">Select state/province</option>
+                  <option value="PH">Philippines</option>
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="postalCode">Postal Code</label>
+              <input type="text" id="postalCode" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone Number (optional)</label>
+              <input type="tel" id="phone" class="form-input">
+              <div class="form-help">For delivery updates only</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Method -->
+        <div class="form-section">
+          <h2 class="section-title">Shipping Method</h2>
+          <div class="payment-methods">
+            <label class="payment-method">
+              <input type="radio" name="shipping" value="standard" checked>
+              <div>
+                <div style="font-weight: 500;">Standard Shipping (5-7 business days)</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">₱150.00</div>
+              </div>
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="shipping" value="express">
+              <div>
+                <div style="font-weight: 500;">Express Shipping (2-3 business days)</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">₱300.00</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="form-section">
+          <h2 class="section-title">Payment Information</h2>
+          
+          <div class="payment-methods">
+            <label class="payment-method">
+              <input type="radio" name="payment" value="card" checked>
+              <span>Credit or Debit Card</span>
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="payment" value="paypal">
+              <span>PayPal</span>
+            </label>
+          </div>
+
+          <div class="accepted-cards">
+            <span class="card-logo">VISA</span>
+            <span class="card-logo">MASTERCARD</span>
+            <span class="card-logo">AMEX</span>
+          </div>
+
+          <div class="form-grid" style="margin-top: 20px;">
+            <div class="form-group">
+              <label class="form-label" for="cardNumber">Card Number</label>
+              <input type="text" id="cardNumber" class="form-input" placeholder="1234 5678 9012 3456" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="cardName">Name on Card</label>
+              <input type="text" id="cardName" class="form-input" required>
+            </div>
+            
+            <div class="form-grid two-column">
+              <div class="form-group">
+                <label class="form-label" for="expiry">Expiry Date</label>
+                <input type="text" id="expiry" class="form-input" placeholder="MM/YY" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cvv">CVV</label>
+                <input type="text" id="cvv" class="form-input" placeholder="123" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Actions -->
+        <div class="button-group">
+          <button type="submit" class="btn btn-primary">Complete Order</button>
+          <button type="button" class="btn btn-secondary">Return to Cart</button>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="order-summary">
+        <h2 class="summary-title">Order Summary</h2>
+        
+        <div class="order-item">
+          <div class="item-details">
+            <div class="item-name">Ultra Mega Widget</div>
+            <div class="item-description">Quantity: 1</div>
+          </div>
+          <div class="item-price">₱2,499.00</div>
+        </div>
+        
+        <div class="price-breakdown">
+          <div class="price-line">
+            <span>Subtotal</span>
+            <span>₱2,499.00</span>
+          </div>
+          <div class="price-line">
+            <span>Shipping</span>
+            <span>₱150.00</span>
+          </div>
+          <div class="price-line">
+            <span>Tax</span>
+            <span>₱299.88</span>
+          </div>
+          <div class="price-line total">
+            <span>Total</span>
+            <span>₱2,948.88</span>
+          </div>
+        </div>
+
+        <!-- Support Information -->
+        <div class="support-section">
+          <div class="support-title">Need Help?</div>
+          <div class="support-contact">📞 Customer Support: 24/7</div>
+          <div class="support-contact">💬 Live Chat: Average 2-minute response</div>
+          <div class="support-contact">📧 Email: support@shopeverything.com</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
